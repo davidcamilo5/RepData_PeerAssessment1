@@ -8,18 +8,85 @@ output:
 
 ## Loading and preprocessing the data
 
+#reading the code
+data <- read.csv("activity.csv", header = TRUE, sep = ",", na.strings = "NA")
+#format of the code (was taken in YYYY-MM-DD format)
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+steps_e_day <- aggregate(steps ~ date, data = data, sum)
+colnames(steps_e_day) <- c("date", "steps")
 
+#the histogram of the number of steps
+hist((steps_e_day$steps), breaks = 10, col = "78", xlab = "Total # of Steps", main= "Histogram of the total number of steps_each day")
+
+#we return of the data format
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+data$interval <- factor(data$interval)
+#we create a variable of nas character
+NA_i <- is.na(as.character(data$steps))
+#we use it in the data
+data_NA <- data[!NA_i,]
+steps_e_day <- aggregate(steps ~ date, data = data_NA, sum)
+colnames(steps_e_day) <- c("date", "steps")
 
 ## What is mean total number of steps taken per day?
 
+#the mean and median
+m<-mean(steps_e_day$steps)
+p<-median(steps_e_day$steps)
+
+#the prints of mean and medium 
+
+print(m)  
+print(p)
 
 
 ## What is the average daily activity pattern?
 
+#average of steps 
+steps_p_inter <- aggregate(data_NA$steps, by=list(interval=data_NA$interval), FUN=mean)
+
+#columns names
+colnames(steps_p_inter) <- c("interval", "average_steps")
+
+#ploting the average 
+plot(as.integer(levels(steps_p_inter$interval)), steps_p_inter$average_steps, type="l",
+     xlab = "Interval", ylab = "A. Number of Steps", main = "A. Daily Activity P",  col ="78")
 
 
 ## Imputing missing values
 
+#we return of the data format
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+data$interval <- factor(data$interval)
+#we create a variable of nas character
+NA_i <- is.na(as.character(data$steps))
+#we use it in the data 
+data_NA <- data[!NA_i,]
+steps_e_day <- aggregate(steps ~ date, data = data_NA, sum)
+colnames(steps_e_day) <- c("date", "steps")
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+com_data <- data_NA
+#use a funtion to assign one day from week
+daywk <- function(date) {
+  wday <- wday(date)
+  iswkend <- wday == 1 | wday == 6
+  daywk <- character(length = length(date))
+  daywk[iswkend] <- "weekend"
+  daywk[!iswkend] <- "weekday"
+  
+  return(as.factor(daywk))
+}
+#we create a group for the comparison
+com_data <- com_data %>% mutate(daywk = daywk(date))
+stepspintervd <- com_data %>% 
+  group_by(interval, daywk) %>% 
+  summarize(mean = mean(steps, na.rm = TRUE))
+library(ggplot2)
+#we use ggplot for look the comparison
+gra <- ggplot(stepspintervd, aes(interval, mean,group =1 ))
+gra <- gra + facet_grid(daywk ~ .)
+gra <- gra + geom_line()
+gra + xlab("Interval") + ylab("Number of steps")
