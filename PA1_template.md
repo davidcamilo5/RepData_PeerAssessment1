@@ -143,7 +143,7 @@ use a function and then we use plots for the comparing
                                   gra <- gra + geom_line()
                                 gra + xlab("Interval") + ylab("Number of steps")
 
-                    ```
+                   ```
 
 ## 9)) All of the R code needed to reproduce the results (numbers, plots, etc.) in the report
 
